@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Web Scraper</title>
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" />
+</head>
+<body>
+    <div class="min-h-screen w-full bg-blue-50">
+        <div class="flex justify-center">
+            <div class="my-8 w-full md:w-1/2 p-4 md:p-10">
+                <div class="center mb-6">
+                    <h3 class="font-black text-3xl mb-8">Web Scraper</h3>
+                    <div class="error-space">
+                        <% if(errors.length > 0) { %>
+                            <ul class="bg-red-100 p-4 rounded-md">
+                                <% for(let i = 0; i < errors.length; i++) {%>
+                                    <li class="my-1"><%= errors[i].msg ? errors[i].msg : errors[i] %></li>
+                                <% } %>
+                            </ul>
+                        <% } %>
+                    </div>
+                </div>
+                <form action="/" method="post">
+                    <div class="my-10">
+                        <input
+                                type="text"
+                                required
+                                name="link"
+                                placeholder="http://cnn.com"
+                                class="input p-4 w-full rounded-lg outline-none focus:outline-none bg-white border-2 border-gray-300 " />
+                        <div class="input-feedback"></div>
+                    </div>
+                    <div class="my-10">
+                        <div class="flex flex-wrap">
+                            <%
+                                for (var i = 0; i < websites.length; i++)
+                                {
+                            %>
+                                <label class="inline-flex items-center cursor-pointer my-4 w-full">
+                                    <input name="newspaper" value="<%= websites[i].short %>" class="text-indigo-500 w-8 h-8 mr-2 focus:ring-indigo-400 focus:ring-opacity-25 border border-gray-300 rounded" type="radio" />
+                                    <%= websites[i].name %>
+                                </label>
+                            <%
+                                }
+                            %>
+                        </div>
+                        <div class="radio-feedback"></div>
+                    </div>
+                    <div class="my-10">
+                        <button type="submit" class="rounded-lg w-full text-white px-10 py-4 outline-none cursor-pointer">
+                            Scrape!
+                        </button>
+                    </div>
+                </form>
+                <% if(scraped != null) { %>
+                    <div class="my-10 link-space ">
+                        <h3 class="text-xl font-medium text-gray-600 mt-2 mb-6">Result</h3>
+                        <div class="rounded-md shadow-lg bg-white px-4 py-6 flex">
+                            <% if(scraped.featured_img != undefined || scraped.featured_img != null || scraped.featured_img != '') {%>
+                                <div class="w-1/5">
+                                    <img src="<%= scraped.featured_img %>" class="rounded-md w-32 h-32" alt="featured image" />
+                                </div>
+                            <% } %>
+                            <div class="w-4/5 p-2">
+                                <h2>
+                                    <a class="text-blue-400 font-bold text-2xl" target="__blank" href="<%= scraped.link %>"><%= scraped.title %></a>
+                                </h2>
+                                <p class="text-gray-400 text-sm"><%= scraped.byline %></p>
+                                <p class="text-gray-400 text-sm"><%= scraped.updated %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <script>
+        const disableSubmitButton = (disable) => {
+            if (disable) {
+                button.setAttribute("disabled", "true");
+                let cls = ["cursor-not-allowed", "bg-gray-300"];
+                button.classList.add(...cls); // add gray background
+                cls = ["bg-blue-400","hover:bg-blue-500", "cursor-pointer"]
+                button.classList.remove(...cls); // remove blue background with the hover effect
+            }
+            else
+            {
+                button.removeAttribute("disabled");
+                let cls = ["bg-blue-400","hover:bg-blue-500", "cursor-pointer"]
+                button.classList.add(...cls); // add blue background with the hover effect
+                cls = ["cursor-not-allowed", "bg-gray-300"];
+                button.classList.remove(...cls); // remove gray background
+            }
+        }
+        const text = document.querySelector("input[name=link]");
+        const radio = document.querySelectorAll("input[name=newspaper]");
+        const button = document.querySelector("button[type=submit]");
+        const input_feedback = document.querySelector("div.input-feedback");
+        const radio_feedback = document.querySelector("div.radio-feedback");
+        const space = document.querySelector("div.link-space");
+        const error = document.querySelector("div.error-space");
+        let link = ""; let newspaper = ""; input_feedback.innerHTML = "";
+        disableSubmitButton(true); // disable submit button
+
+        text.addEventListener("change", (e) => {
+            link = "";
+            if(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/.test(e.target.value)) {
+                link = e.target.value;
+                input_feedback.innerHTML = '';
+                if (newspaper && link) {
+                    button.removeAttribute("disabled");
+                    disableSubmitButton(false);
+                    space.innerHTML = "";
+                    error.innerHTML = "";
+                }
+            } else {
+                input_feedback.innerHTML = `<span class="text-red-500 font-small">Provide a valid url</span>`;
+            }
+        });
+
+        radio.forEach(el => {
+            el.addEventListener("change", (e) => {
+                newspaper = e.target.value;
+                if (newspaper && link) {
+                    button.removeAttribute("disabled");
+                    disableSubmitButton(false);
+                    space.innerHTML = "";
+                    error.innerHTML = "";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
